@@ -132,6 +132,7 @@ public class AutorController {
 	public ResponseEntity<?> crearAutor(@RequestBody @Validated Autor au) {
 		try {
 			if (au.getLibros().size() > 0) {
+				
 				for (Libro lib : au.getLibros()) {
 					lib.setAutor(au);
 				}
