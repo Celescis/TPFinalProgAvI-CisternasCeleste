@@ -1,6 +1,7 @@
 package com.cisternas.tpfinal.model;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 
 import jakarta.persistence.CascadeType;
@@ -15,7 +16,7 @@ import jakarta.validation.constraints.NotBlank;
 
 @Entity
 @Table(name = "sys_autor")
-public class Autor implements Serializable{
+public class Autor implements Serializable {
 
 	/**
 	 * 
@@ -26,21 +27,27 @@ public class Autor implements Serializable{
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "au_id")
 	private Long id;
-	
-	@NotBlank
+
+	@NotBlank(message="Debe ingresar el nombre")
 	@Column(name = "au_nombre")
 	private String nombre;
-	
-	@NotBlank
+
+	@NotBlank(message="Debe ingresar el apellido")
 	@Column(name = "au_apellido")
 	private String apellido;
-	
+
+	@NotBlank(message="Debe ingresar la nacionalidad")
 	@Column(name = "au_nacionalidad")
 	private String nacionalidad;
 
-	//CON CASCADE ALL DIGO QUE CUALQUIER ENTIDAD A LA QUE ME REFIERA EN ESTE ATRIBUTO, QUE HAGA TODO (MODIFICAR, BORRAR, CREAR)
+	// CON CASCADE ALL DIGO QUE CUALQUIER ENTIDAD A LA QUE ME REFIERA EN ESTE
+	// ATRIBUTO, QUE HAGA TODO (MODIFICAR, BORRAR, CREAR)
 	@OneToMany(mappedBy = "autor", cascade = CascadeType.ALL)
 	private List<Libro> libros;
+
+	public Autor() {
+		libros = new ArrayList<>();
+	}
 
 	public Long getId() {
 		return id;
@@ -69,7 +76,7 @@ public class Autor implements Serializable{
 	public String getNacionalidad() {
 		return nacionalidad;
 	}
-	
+
 	public void setNacionalidad(String nacionalidad) {
 		this.nacionalidad = nacionalidad;
 	}
@@ -88,5 +95,4 @@ public class Autor implements Serializable{
 				+ ", libros=" + libros + "]";
 	}
 
-	
 }

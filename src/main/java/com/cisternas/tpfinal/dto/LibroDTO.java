@@ -1,6 +1,5 @@
 package com.cisternas.tpfinal.dto;
 
-import com.cisternas.tpfinal.model.Autor;
 
 public class LibroDTO {
 
@@ -8,7 +7,7 @@ public class LibroDTO {
 	private String titulo;
 	private Float precio;
 	private String editorial;
-	private Autor autor;
+	private AutorDTO autor;
 
 	public Long getId() {
 		return id;
@@ -42,11 +41,11 @@ public class LibroDTO {
 		this.editorial = editorial;
 	}
 
-	public Autor getAutor() {
+	public AutorDTO getAutor() {
 		return autor;
 	}
 
-	public void setAutor(Autor autor) {
+	public void setAutor(AutorDTO autor) {
 		this.autor = autor;
 	}
 

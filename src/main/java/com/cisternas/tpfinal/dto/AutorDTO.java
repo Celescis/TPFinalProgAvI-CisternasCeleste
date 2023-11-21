@@ -1,8 +1,7 @@
 package com.cisternas.tpfinal.dto;
 
+import java.util.ArrayList;
 import java.util.List;
-
-import com.cisternas.tpfinal.model.Libro;
 
 public class AutorDTO {
 
@@ -10,7 +9,11 @@ public class AutorDTO {
 	private String nombre;
 	private String apellido;
 	private String nacionalidad;
-	private List<Libro> libros;
+	private List<LibroDTO> libros;
+
+	public AutorDTO() {
+		libros = new ArrayList<>();
+	}
 
 	public Long getId() {
 		return id;
@@ -39,16 +42,16 @@ public class AutorDTO {
 	public String getNacionalidad() {
 		return nacionalidad;
 	}
-	
+
 	public void setNacionalidad(String nacionalidad) {
 		this.nacionalidad = nacionalidad;
 	}
 
-	public List<Libro> getLibros() {
+	public List<LibroDTO> getLibros() {
 		return libros;
 	}
 
-	public void setLibros(List<Libro> libros) {
+	public void setLibros(List<LibroDTO> libros) {
 		this.libros = libros;
 	}
 

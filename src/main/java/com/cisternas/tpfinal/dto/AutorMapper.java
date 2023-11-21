@@ -3,50 +3,71 @@ package com.cisternas.tpfinal.dto;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.cisternas.tpfinal.model.Autor;
-
+import com.cisternas.tpfinal.model.Libro;
 
 @Component
 public class AutorMapper {
 
-	//PARA PROTEGER LA ENTITY
-		public Autor dtoToEntity(AutorDTO dto)
-		{
-			Autor entity = new Autor();
-			
-			entity.setId(dto.getId());
-			entity.setNombre(dto.getNombre());
-			entity.setApellido(dto.getApellido());
-			entity.setNacionalidad(dto.getNacionalidad());
-			entity.setLibros(dto.getLibros());
-			
-			return entity;
-		}
-		
-		public AutorDTO entityToDto(Autor entity)
-		{
-			AutorDTO dto = new AutorDTO();
+	@Autowired
+	LibroMapper libroMapper;
 
-			dto.setId(entity.getId());
-			dto.setNombre(entity.getNombre());
-			dto.setApellido(entity.getApellido());
-			dto.setNacionalidad(entity.getNacionalidad());
-			dto.setLibros(entity.getLibros());
+	public Autor dtoToEntity(AutorDTO dto) {
+		Autor entity = new Autor();
 
-			return dto;
-		}
-		
-		public List<AutorDTO> lstEntityToLstDto(List<Autor> entity)
-		{
-			List<AutorDTO> lstDto = new ArrayList<>();
-			
-			for(Autor ent : entity)
-			{
-				lstDto.add(this.entityToDto(ent));
-			}
+		entity.setId(dto.getId());
+		entity.setNombre(dto.getNombre());
+		entity.setApellido(dto.getApellido());
+		entity.setNacionalidad(dto.getNacionalidad());
+		entity.setLibros(libroMapper.lstDtoToLstEntity(dto.getLibros()));
 
-			return lstDto;
+		/*
+		 * for (LibroDTO libDto : dto.getLibros()) { Libro lib =
+		 * libroMapper.dtoToEntity(libDto); entity.getLibros().add(lib); }
+		 */
+		return entity;
+	}
+
+	public AutorDTO entityToDto(Autor entity) {
+		AutorDTO dto = new AutorDTO();
+
+		dto.setId(entity.getId());
+		dto.setNombre(entity.getNombre());
+		dto.setApellido(entity.getApellido());
+		dto.setNacionalidad(entity.getNacionalidad());
+		dto.setLibros(libroMapper.lstEntityToLstDto(entity.getLibros()));
+
+		/*
+		 * for (Libro lib : entity.getLibros()) {
+		 * 
+		 * LibroDTO libDto = libroMapper.entityToDto(lib);
+		 * 
+		 * dto.getLibros().add(libDto); }
+		 */
+
+		return dto;
+	}
+
+	public List<AutorDTO> lstEntityToLstDto(List<Autor> entityList) {
+		List<AutorDTO> dtoList = new ArrayList<>();
+
+		for (Autor ent : entityList) {
+			dtoList.add(this.entityToDto(ent));
 		}
+
+		return dtoList;
+	}
+
+	public List<Autor> lstDtoToLstEntity(List<AutorDTO> dtoList) {
+		List<Autor> lst = new ArrayList<>();
+
+		for (AutorDTO dto : dtoList) {
+			lst.add(this.dtoToEntity(dto));
+		}
+
+		return lst;
+	}
 }

@@ -12,6 +12,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
 @Entity
 @Table(name = "sys_libro")
@@ -27,14 +28,15 @@ public class Libro implements Serializable{
 	@Column(name = "lib_id")
 	private Long id;
 	
-	@NotBlank
+	@NotBlank(message="Debe ingresar el titulo")
 	@Column(name = "lib_titulo")
 	private String titulo;
 	
+	@NotNull(message="Debe ingresar el precio")
 	@Column(name = "lib_precio")
 	private Float precio;
 	
-	@NotBlank
+	@NotBlank(message="Debe ingresar la editorial")
 	@Column(name = "lib_editorial")
 	private String editorial;
 
