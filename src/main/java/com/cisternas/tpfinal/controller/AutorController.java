@@ -75,7 +75,7 @@ public class AutorController {
 	public ResponseEntity<?> obtenerAutoresPorApellidoOrderById(@PathVariable String apellido) {
 		try {
 
-			List<Autor> auList = (List<Autor>) autorRepository.findAllByApellidoOrderById(apellido);
+			List<Autor> auList = autorRepository.findAllByApellidoOrderById(apellido);
 
 			if (auList.isEmpty()) {
 				return new ResponseEntity<String>("No se encontraron autores de apellido: " + apellido,
@@ -95,7 +95,7 @@ public class AutorController {
 	public ResponseEntity<?> obtenerAutoresPorNacionalidad(@PathVariable String nacionalidad) {
 		try {
 
-			List<Autor> auList = (List<Autor>) autorRepository.findAllByNacionalidad(nacionalidad);
+			List<Autor> auList = autorRepository.findAllByNacionalidad(nacionalidad);
 
 			if (auList.isEmpty()) {
 				return new ResponseEntity<String>("No se encontraron autores de nacionalidad: " + nacionalidad,
@@ -111,40 +111,37 @@ public class AutorController {
 	}
 
 	// GET - LISTA DE AUTORES POR LIBRO EMPIEZA CON...
-	@GetMapping("/autores/libro/{letra}")
-	public ResponseEntity<?> obtenerAutoresPorLibroEmpiezaCon(@PathVariable String letra) {
-		try {
+	@GetMapping("/autores/nombre/{letra}")
+	public ResponseEntity<?> obtenerAutoresPorNombreEmpiezaCon(@PathVariable String letra) {
+	    try {
+	        List<Autor> auList = autorRepository.findAllByNombreEmpiezaCon(letra);
 
-			List<Autor> auList = (List<Autor>) autorRepository.findAllByLibroTituloEmpiezaCon(letra);
-
-			if (auList.isEmpty()) {
-				return new ResponseEntity<String>("No se encontraron autores de nacionalidad: " + letra,
-						HttpStatus.CONFLICT);
-			} else {
-				return new ResponseEntity<List<AutorDTO>>(autorMapper.lstEntityToLstDto(auList), HttpStatus.OK);
-			}
-
-		} catch (Exception e) {
-			return new ResponseEntity<String>("Error obteniendo la lista de autores: " + e.getMessage(),
-					HttpStatus.BAD_REQUEST);
-		}
+	        if (auList.isEmpty()) {
+	            return new ResponseEntity<String>("No se encontraron autores que su nombre empiece con: " + letra, HttpStatus.NOT_FOUND);
+	        } else {
+	            return new ResponseEntity<List<AutorDTO>>(autorMapper.lstEntityToLstDto(auList), HttpStatus.OK);
+	        }
+	    } catch (Exception e) {
+	        return new ResponseEntity<String>("Error obteniendo la lista de autores: " + e.getMessage(), HttpStatus.BAD_REQUEST);
+	    }
 	}
+
 
 	// POST - CREAR UN AUTOR
 	@PostMapping("/autor")
 	public ResponseEntity<?> crearAutor(@RequestBody @Validated Autor au) {
 		try {
-			if(au.getLibros().size()>0)
-			{
+			if (au.getLibros().size() > 0) {
 				for (Libro lib : au.getLibros()) {
 					lib.setAutor(au);
 				}
-				
+
 				autorRepository.save(au);
-				
-				return new ResponseEntity<String>("Se creo el autor", HttpStatus.OK);				
-			}else {
-				return new ResponseEntity<String>("Debe ingresar un libro", HttpStatus.CONFLICT);	
+
+				return new ResponseEntity<String>("Se creo el autor", HttpStatus.OK);
+			} else {
+				autorRepository.save(au);
+				return new ResponseEntity<String>("Se creo el autor sin libros", HttpStatus.OK);
 			}
 
 		} catch (Exception e) {
@@ -155,11 +152,17 @@ public class AutorController {
 	// PUT - MODIFICAR UN AUTOR
 	@PutMapping("/autor")
 	public ResponseEntity<?> modificarAutor(@RequestBody @Validated AutorDTO auDto) {
-		if (autorService.verificarLibrosAutor(auDto)) {
+		try {
+			if (autorService.verificarLibrosAutor(auDto)) {
 
-			return new ResponseEntity<String>("Se modifico el autor", HttpStatus.OK);
-		} else {
-			return new ResponseEntity<String>("Autor no encontrado con id " + auDto.getId(), HttpStatus.NOT_FOUND);
+				return new ResponseEntity<String>("Se modifico el autor", HttpStatus.OK);
+			} else {
+				return new ResponseEntity<String>("Autor no encontrado con id " + auDto.getId(), HttpStatus.NOT_FOUND);
+			}
+
+		} catch (Exception e) {
+			return new ResponseEntity<String>("Error modificando al autor: " + e.getMessage(),
+					HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
 
@@ -167,19 +170,24 @@ public class AutorController {
 	@DeleteMapping("/autor")
 	public ResponseEntity<?> eliminarAutor(@RequestBody @Validated AutorDTO auDto) {
 		try {
-			Optional<Autor> pOpt = autorRepository.findById(auDto.getId());
-
-			if (pOpt.isPresent()) {
-
-				autorRepository.delete(pOpt.get());
-
-				return new ResponseEntity<String>("Se elimino el autor", HttpStatus.OK);
-
+			if (auDto.getId() == null) {
+				return new ResponseEntity<String>("Debe ingresar un id", HttpStatus.NOT_FOUND);
 			} else {
+				Optional<Autor> pOpt = autorRepository.findById(auDto.getId());
 
-				return new ResponseEntity<String>("Autor no encontrado con id " + pOpt.get().getId(),
-						HttpStatus.NOT_FOUND);
+				if (pOpt.isPresent()) {
+
+					autorRepository.delete(pOpt.get());
+
+					return new ResponseEntity<String>("Se elimino el autor", HttpStatus.OK);
+
+				} else {
+
+					return new ResponseEntity<String>("Autor no encontrado con id " + auDto.getId(),
+							HttpStatus.NOT_FOUND);
+				}
 			}
+
 		} catch (Exception e) {
 			return new ResponseEntity<String>("Error eliminando al autor: " + e.getMessage(),
 					HttpStatus.INTERNAL_SERVER_ERROR);

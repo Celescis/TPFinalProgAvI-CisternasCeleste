@@ -14,7 +14,7 @@ public interface AutorRepository  extends CrudRepository<Autor, Long>{
     @Query("select a from Autor a where a.nacionalidad = :nacionalidad")
     List<Autor> findAllByNacionalidad(String nacionalidad);
     
-    @Query("select a from Autor a join a.libros l where l.titulo like :letra%")
-    List<Autor> findAllByLibroTituloEmpiezaCon(String letra);
-    
+    @Query(nativeQuery=true, value="select * from sys_autor where au_nombre like :letra%")
+    List<Autor> findAllByNombreEmpiezaCon(String letra);
+
 }

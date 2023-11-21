@@ -18,7 +18,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.cisternas.tpfinal.dto.LibroDTO;
 import com.cisternas.tpfinal.dto.LibroMapper;
+import com.cisternas.tpfinal.model.Autor;
 import com.cisternas.tpfinal.model.Libro;
+import com.cisternas.tpfinal.repository.AutorRepository;
 import com.cisternas.tpfinal.repository.LibroRepository;
 
 @RestController
@@ -29,6 +31,8 @@ public class LibroController {
 	LibroRepository libroRepository;
 	@Autowired
 	LibroMapper libroMapper;
+	@Autowired
+	AutorRepository autorRepository;
 
 	// GET - UN LIBRO
 	@GetMapping("/libro/{id}")
@@ -81,18 +85,28 @@ public class LibroController {
 					HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
-	
+
 	// POST - CREAR UN LIBRO
 	@PostMapping("/libro")
 	public ResponseEntity<?> crearLibro(@RequestBody @Validated Libro li) {
 		try {
-			if (li != null) {
+			if (li.getAutor() != null) {
+				Optional<Autor> pOpt = this.autorRepository.findById(li.getAutor().getId());
 
-				libroRepository.save(li);
+				if (pOpt.isPresent()) {
+					libroRepository.save(li);
 
-				return new ResponseEntity<String>("Se creo el libro", HttpStatus.OK);
+					return new ResponseEntity<String>(
+							"Se creo el libro del autor: " + pOpt.get().getNombre() + " " + pOpt.get().getApellido(),
+							HttpStatus.OK);
+				} else {
+					return new ResponseEntity<String>("No se creo el libro porque no existe un autor con ese id",
+							HttpStatus.NOT_FOUND);
+				}
+
 			} else {
-				return new ResponseEntity<String>("Debe ingresar un libro", HttpStatus.CONFLICT);
+				libroRepository.save(li);
+				return new ResponseEntity<String>("Se creo el libro sin autor", HttpStatus.OK);
 			}
 
 		} catch (Exception e) {
@@ -103,13 +117,18 @@ public class LibroController {
 	// PUT - MODIFICAR UN LIBRO
 	@PutMapping("/libro")
 	public ResponseEntity<?> modificarAutor(@RequestBody @Validated LibroDTO liDto) {
-		Optional<Libro> pOpt = this.libroRepository.findById(liDto.getId());
+		try {
+			Optional<Libro> pOpt = this.libroRepository.findById(liDto.getId());
 
-		if (pOpt.isPresent()) {
-			libroRepository.save(libroMapper.dtoToEntity(liDto));
-			return new ResponseEntity<String>("Se modifico el libro", HttpStatus.OK);
-		} else {
-			return new ResponseEntity<>("Libro no encontrado con id " + liDto.getId(), HttpStatus.NOT_FOUND);
+			if (pOpt.isPresent()) {
+				libroRepository.save(libroMapper.dtoToEntity(liDto));
+				return new ResponseEntity<String>("Se modifico el libro", HttpStatus.OK);
+			} else {
+				return new ResponseEntity<>("Libro no encontrado con id " + liDto.getId(), HttpStatus.NOT_FOUND);
+			}
+		} catch (Exception e) {
+			return new ResponseEntity<String>("Error modificando al libro: " + e.getMessage(),
+					HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
 
@@ -117,18 +136,22 @@ public class LibroController {
 	@DeleteMapping("/libro")
 	public ResponseEntity<?> eliminarLibro(@RequestBody @Validated LibroDTO liDto) {
 		try {
-			Optional<Libro> pOpt = libroRepository.findById(liDto.getId());
-
-			if (pOpt.isPresent()) {
-
-				libroRepository.delete(pOpt.get());
-
-				return new ResponseEntity<String>("Se elimino el libro", HttpStatus.OK);
-
+			if (liDto.getId() == null) {
+				return new ResponseEntity<String>("Debe ingresar un id", HttpStatus.NOT_FOUND);
 			} else {
+				Optional<Libro> pOpt = libroRepository.findById(liDto.getId());
 
-				return new ResponseEntity<String>("Libro no encontrado con id " + pOpt.get().getId(),
-						HttpStatus.NOT_FOUND);
+				if (pOpt.isPresent()) {
+
+					libroRepository.delete(pOpt.get());
+
+					return new ResponseEntity<String>("Se elimino el libro", HttpStatus.OK);
+
+				} else {
+
+					return new ResponseEntity<String>("Libro no encontrado con id " + liDto.getId(),
+							HttpStatus.NOT_FOUND);
+				}
 			}
 		} catch (Exception e) {
 			return new ResponseEntity<String>("Error eliminando al libro: " + e.getMessage(),
